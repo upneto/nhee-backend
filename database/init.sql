@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS texts (
   type VARCHAR(50),
   author VARCHAR(255) NOT NULL,
   institution VARCHAR(255),
-  references TEXT,
+  "references" TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

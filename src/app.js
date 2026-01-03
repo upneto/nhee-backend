@@ -10,6 +10,7 @@ const questionRoutes = require('./modules/questions/questions.routes');
 const userRoutes = require('./modules/users/users.routes');
 const conceptRoutes = require('./modules/concepts/concepts.routes');
 const contactRoutes = require('./modules/contact/contact.routes');
+const domainRoutes = require('./modules/domains/domains.routes');
 
 const errorHandler = require('./shared/middleware/errorHandler');
 
@@ -35,6 +36,7 @@ app.use(`${apiPrefix}/questions`, questionRoutes);
 app.use(`${apiPrefix}/users`, userRoutes);
 app.use(`${apiPrefix}/concepts`, conceptRoutes);
 app.use(`${apiPrefix}/contact`, contactRoutes);
+app.use(`${apiPrefix}/domains`, domainRoutes);
 
 // Rota 404
 app.use((req, res) => {

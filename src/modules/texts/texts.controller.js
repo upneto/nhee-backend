@@ -1,4 +1,5 @@
 const textsService = require('./texts.service');
+const domainValidator = require('../../shared/middleware/domainValidator');
 
 const textsController = {
   async list(req, res, next) {
@@ -9,7 +10,9 @@ const textsController = {
         type: req.query.type,
         concept: req.query.concept,
         page: parseInt(req.query.page) || 1,
-        limit: parseInt(req.query.limit) || 20
+        limit: parseInt(req.query.limit) || 20,
+        sortBy: req.query.sortBy,
+        sortOrder: req.query.sortOrder
       };
       
       const result = await textsService.list(filters);
@@ -39,8 +42,21 @@ const textsController = {
   async create(req, res, next) {
     try {
       const userId = req.user.id;
-      const textData = { ...req.body, user_id: userId };
+      const { area, type, objective, foundation_level } = req.body;
       
+      // Validar campos de domínio
+      const validation = await domainValidator.validateMultiple([
+        { table: 'knowledge_areas', value: area, fieldName: 'Área do conhecimento', required: true },
+        { table: 'text_types', value: type, fieldName: 'Tipo de texto', required: false },
+        { table: 'text_objectives', value: objective, fieldName: 'Objetivo', required: false },
+        { table: 'foundation_levels', value: foundation_level, fieldName: 'Nível de fundamentação', required: false }
+      ]);
+      
+      if (!validation.valid) {
+        return res.status(400).json({ errors: validation.errors });
+      }
+      
+      const textData = { ...req.body, user_id: userId };
       const text = await textsService.create(textData);
       
       res.status(201).json(text);
@@ -53,6 +69,19 @@ const textsController = {
     try {
       const { id } = req.params;
       const userId = req.user.id;
+      const { area, type, objective, foundation_level } = req.body;
+      
+      // Validar campos de domínio
+      const validation = await domainValidator.validateMultiple([
+        { table: 'knowledge_areas', value: area, fieldName: 'Área do conhecimento', required: true },
+        { table: 'text_types', value: type, fieldName: 'Tipo de texto', required: false },
+        { table: 'text_objectives', value: objective, fieldName: 'Objetivo', required: false },
+        { table: 'foundation_levels', value: foundation_level, fieldName: 'Nível de fundamentação', required: false }
+      ]);
+      
+      if (!validation.valid) {
+        return res.status(400).json({ errors: validation.errors });
+      }
       
       const text = await textsService.update(id, userId, req.body);
       

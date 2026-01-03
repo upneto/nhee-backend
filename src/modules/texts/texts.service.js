@@ -2,12 +2,12 @@ const db = require('../../database/connection');
 
 const textsService = {
   async list(filters) {
-    const { search, area, type, concept, page, limit } = filters;
+    const { search, area, type, concept, page, limit, sortBy, sortOrder } = filters;
     const offset = (page - 1) * limit;
     
     let query = `
       SELECT t.*, u.username, u.name as author_name,
-             AVG(ar.rating) as authenticity,
+             COALESCE(AVG(ar.rating), 0) as authenticity_score,
              COUNT(DISTINCT q.id) as questions_count
       FROM texts t
       LEFT JOIN users u ON t.user_id = u.id
@@ -37,7 +37,43 @@ const textsService = {
       paramCount++;
     }
     
-    query += ` GROUP BY t.id, u.username, u.name ORDER BY t.created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+    if (concept) {
+      query += ` AND EXISTS (
+        SELECT 1 FROM text_concepts tc 
+        JOIN concepts c ON tc.concept_id = c.id 
+        WHERE tc.text_id = t.id AND c.name ILIKE $${paramCount}
+      )`;
+      params.push(`%${concept}%`);
+      paramCount++;
+    }
+    
+    query += ` GROUP BY t.id, u.username, u.name`;
+    
+    // Adicionar ordenação
+    if (sortBy) {
+      const validSortFields = {
+        'created_at': 't.created_at',
+        'title': 't.title',
+        'questions_count': 'questions_count',
+        'authenticity_score': 'authenticity_score'
+      };
+      
+      const sortFields = sortBy.split(',').map(field => {
+        const trimmedField = field.trim();
+        return validSortFields[trimmedField] || null;
+      }).filter(field => field !== null);
+      
+      if (sortFields.length > 0) {
+        const order = (sortOrder && sortOrder.toLowerCase() === 'asc') ? 'ASC' : 'DESC';
+        query += ` ORDER BY ${sortFields.join(` ${order}, `)} ${order}`;
+      } else {
+        query += ` ORDER BY t.created_at DESC`;
+      }
+    } else {
+      query += ` ORDER BY t.created_at DESC`;
+    }
+    
+    query += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
     params.push(limit, offset);
     
     const result = await db.query(query, params);
@@ -73,13 +109,13 @@ const textsService = {
   },
 
   async create(textData) {
-    const { user_id, title, content, area, type, author, institution, references } = textData;
+    const { user_id, title, content, area, type, author, institution, references, objective, foundation_level } = textData;
     
     const result = await db.query(
-      `INSERT INTO texts (user_id, title, content, area, type, author, institution, references)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO texts (user_id, title, content, area, type, author, institution, references, objective, foundation_level)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
-      [user_id, title, content, area, type, author, institution, references]
+      [user_id, title, content, area, type, author, institution, references, objective, foundation_level]
     );
     
     return result.rows[0];
@@ -101,15 +137,16 @@ const textsService = {
       throw error;
     }
     
-    const { title, content, area, type, author, institution, references } = textData;
+    const { title, content, area, type, author, institution, references, objective, foundation_level } = textData;
     
     const result = await db.query(
       `UPDATE texts 
        SET title = $1, content = $2, area = $3, type = $4, 
-           author = $5, institution = $6, references = $7
-       WHERE id = $8
+           author = $5, institution = $6, references = $7,
+           objective = $8, foundation_level = $9
+       WHERE id = $10
        RETURNING *`,
-      [title, content, area, type, author, institution, references, id]
+      [title, content, area, type, author, institution, references, objective, foundation_level, id]
     );
     
     return result.rows[0];

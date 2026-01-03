@@ -1,4 +1,5 @@
 const questionsService = require('./questions.service');
+const domainValidator = require('../../shared/middleware/domainValidator');
 
 const questionsController = {
   async list(req, res, next) {
@@ -15,9 +16,23 @@ const questionsController = {
     try {
       const { textId } = req.params;
       const userId = req.user.id;
-      const questionData = { ...req.body, text_id: textId, user_id: userId };
+      const { type } = req.body;
       
+      // Validar tipo de contribuição
+      const validation = await domainValidator.validate(
+        'question_types',
+        type,
+        'Tipo de contribuição',
+        true
+      );
+      
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+      
+      const questionData = { ...req.body, text_id: textId, user_id: userId };
       const question = await questionsService.create(questionData);
+      
       res.status(201).json(question);
     } catch (error) {
       next(error);
