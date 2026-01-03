@@ -1,0 +1,27 @@
+meta {
+  name: Create Question
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/questions/texts/{{textId}}/questions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  textId: your-text-id-here
+}
+
+body:json {
+  {
+    "title": "Qual a diferença entre substância primeira e segunda?",
+    "content": "Gostaria de entender melhor a distinção que Aristóteles faz entre substância primeira e substância segunda. Poderia alguém esclarecer com exemplos práticos?",
+    "type": "Dúvida Filosófica"
+  }
+}

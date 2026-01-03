@@ -1,0 +1,19 @@
+meta {
+  name: Delete Text
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/texts/{{textId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  textId: your-text-id-here
+}

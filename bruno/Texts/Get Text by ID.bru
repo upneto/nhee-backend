@@ -1,0 +1,15 @@
+meta {
+  name: Get Text by ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/texts/{{textId}}
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  textId: your-text-id-here
+}

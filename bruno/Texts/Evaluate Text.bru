@@ -1,0 +1,25 @@
+meta {
+  name: Evaluate Text
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/texts/{{textId}}/evaluate
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  textId: your-text-id-here
+}
+
+body:json {
+  {
+    "rating": 8
+  }
+}

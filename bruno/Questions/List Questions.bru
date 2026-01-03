@@ -1,0 +1,15 @@
+meta {
+  name: List Questions
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/questions/texts/{{textId}}/questions
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  textId: your-text-id-here
+}

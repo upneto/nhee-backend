@@ -1,0 +1,15 @@
+meta {
+  name: My Texts
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/texts/my-texts
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

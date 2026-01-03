@@ -1,0 +1,20 @@
+meta {
+  name: Send Contact
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/contact/send
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "João Silva",
+    "email": "joao@exemplo.com",
+    "subject": "Dúvida sobre a plataforma",
+    "message": "Olá, gostaria de saber mais sobre como funciona a plataforma e como posso contribuir com textos."
+  }
+}

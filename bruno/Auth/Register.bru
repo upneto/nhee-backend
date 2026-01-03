@@ -1,0 +1,28 @@
+meta {
+  name: Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "usuario_teste",
+    "email": "usuario@teste.com",
+    "password": "senha123",
+    "name": "Usuário de Teste",
+    "institution": "Universidade Federal",
+    "bio": "Pesquisador em filosofia"
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setEnvVar("token", res.body.token);
+  }
+}
