@@ -1,16 +1,19 @@
 -- Seed data para testes
 -- Senha padrão para todos os usuários: senha123 (hash bcrypt)
 
+-- Configurar encoding
+SET client_encoding = 'UTF8';
+
 -- Limpar dados existentes (cuidado em produção!)
 TRUNCATE TABLE authenticity_ratings, questions, text_concepts, texts, concepts, users CASCADE;
 
 -- Inserir usuários de teste
 INSERT INTO users (id, username, email, password, name, institution, bio) VALUES
-('11111111-1111-1111-1111-111111111111', 'filosofante123', 'filosofante@email.com', '$2b$10$rX8X8X8X8X8X8X8X8X8X8uj7bQZK6qLZj5mH5mH5mH5mH5mH5mH5m', 'João Filosofante', 'USP', 'Pesquisador em metafísica e fenomenologia'),
-('22222222-2222-2222-2222-222222222222', 'etica_contemporanea', 'etica@email.com', '$2b$10$rX8X8X8X8X8X8X8X8X8X8uj7bQZK6qLZj5mH5mH5mH5mH5mH5mH5m', 'Maria Ética', 'UNICAMP', 'Especialista em ética aplicada'),
-('33333333-3333-3333-3333-333333333333', 'epistemologia_br', 'epistemo@email.com', '$2b$10$rX8X8X8X8X8X8X8X8X8X8uj7bQZK6qLZj5mH5mH5mH5mH5mH5mH5m', 'Carlos Epistêmico', 'UFRJ', 'Doutor em teoria do conhecimento'),
-('44444444-4444-4444-4444-444444444444', 'logica_formal', 'logica@email.com', '$2b$10$rX8X8X8X8X8X8X8X8X8X8uj7bQZK6qLZj5mH5mH5mH5mH5mH5mH5m', 'Ana Lógica', 'UFMG', 'Professora de lógica e filosofia da matemática'),
-('55555555-5555-5555-5555-555555555555', 'estetica_arte', 'estetica@email.com', '$2b$10$rX8X8X8X8X8X8X8X8X8X8uj7bQZK6qLZj5mH5mH5mH5mH5mH5mH5m', 'Pedro Esteta', 'UNESP', 'Pesquisador em estética e filosofia da arte');
+('11111111-1111-1111-1111-111111111111', 'filosofante123', 'filosofante@email.com', E'$2b$10$Cd.VyxAI.dEl1IWtmdbCH.dzeX//183ehXBGaQdiPVB7mXj2vNqHe', E'João Filosofante', 'USP', E'Pesquisador em metafísica e fenomenologia'),
+('22222222-2222-2222-2222-222222222222', 'etica_contemporanea', 'etica@email.com', E'$2b$10$Cd.VyxAI.dEl1IWtmdbCH.dzeX//183ehXBGaQdiPVB7mXj2vNqHe', E'Maria Ética', 'UNICAMP', E'Especialista em ética aplicada'),
+('33333333-3333-3333-3333-333333333333', 'epistemologia_br', 'epistemo@email.com', E'$2b$10$Cd.VyxAI.dEl1IWtmdbCH.dzeX//183ehXBGaQdiPVB7mXj2vNqHe', E'Carlos Epistêmico', 'UFRJ', E'Doutor em teoria do conhecimento'),
+('44444444-4444-4444-4444-444444444444', 'logica_formal', 'logica@email.com', E'$2b$10$Cd.VyxAI.dEl1IWtmdbCH.dzeX//183ehXBGaQdiPVB7mXj2vNqHe', E'Ana Lógica', 'UFMG', E'Professora de lógica e filosofia da matemática'),
+('55555555-5555-5555-5555-555555555555', 'estetica_arte', 'estetica@email.com', E'$2b$10$Cd.VyxAI.dEl1IWtmdbCH.dzeX//183ehXBGaQdiPVB7mXj2vNqHe', 'Pedro Esteta', 'UNESP', E'Pesquisador em estética e filosofia da arte');
 
 -- Inserir textos de teste
 INSERT INTO texts (id, user_id, title, content, area, type, author, institution, "references", objective, foundation_level, created_at) VALUES
@@ -95,6 +98,86 @@ Arthur Danto argumenta que o que define uma obra de arte não são propriedades 
 
 Mas isso não torna a arte arbitrária? Se qualquer coisa pode ser arte dependendo do contexto, não perdemos critérios de valor? Talvez. Ou talvez a arte contemporânea nos convida a pensar o valor artístico de forma diferente - não em termos de beleza atemporal, mas de provocação conceitual, questionamento de convenções, abertura de novas possibilidades de significado.',
 'estetica', 'opiniao', 'Pedro Esteta', 'UNESP', 'DANTO, Arthur. A Transfiguração do Lugar-Comum. Cosac Naify, 2005.;DICKIE, George. Art and the Aesthetic: An Institutional Analysis. Cornell University Press, 1974.', 'especular', 'fundamentado', NOW() - INTERVAL '6 days');
+
+-- Inserir conceitos
+INSERT INTO concepts (id, name, description, category) VALUES
+('c0000001-0000-0000-0000-000000000001', 'Tempo', E'Dimensão fundamental da experiência e da realidade física', 'metafisica'),
+('c0000002-0000-0000-0000-000000000002', E'Consciência', E'Estado de percepção e autoconsciência', 'filosofia-mente'),
+('c0000003-0000-0000-0000-000000000003', 'Fenomenologia', E'Método filosófico de análise da experiência', 'metafisica'),
+('c0000004-0000-0000-0000-000000000004', 'Relatividade', E'Teoria física sobre espaço-tempo', 'filosofia-ciencia'),
+('c0000005-0000-0000-0000-000000000005', 'Conhecimento', E'Crença verdadeira justificada ou estado epistêmico', 'epistemologia'),
+('c0000006-0000-0000-0000-000000000006', E'Crença', E'Atitude proposicional de aceitação', 'epistemologia'),
+('c0000007-0000-0000-0000-000000000007', E'Justificação', E'Fundamentação racional de crenças', 'epistemologia'),
+('c0000008-0000-0000-0000-000000000008', 'Verdade', E'Correspondência ou coerência com a realidade', 'metafisica'),
+('c0000009-0000-0000-0000-000000000009', 'Responsabilidade', E'Capacidade de responder por ações e escolhas', 'etica'),
+('c0000010-0000-0000-0000-000000000010', E'Ética do Cuidado', E'Abordagem ética baseada em relações e contexto', 'etica'),
+('c0000011-0000-0000-0000-000000000011', 'Pluralismo Moral', E'Reconhecimento de múltiplas perspectivas éticas', 'etica'),
+('c0000012-0000-0000-0000-000000000012', 'Relativismo', E'Dependência da verdade ou valor ao contexto', 'etica'),
+('c0000013-0000-0000-0000-000000000013', 'Paradoxo', E'Contradição aparente ou real no raciocínio', 'logica'),
+('c0000014-0000-0000-0000-000000000014', E'Autorreferência', E'Referência de algo a si mesmo', 'logica'),
+('c0000015-0000-0000-0000-000000000015', 'Incompletude', E'Limitação fundamental de sistemas formais', 'logica'),
+('c0000016-0000-0000-0000-000000000016', 'Metalinguagem', E'Linguagem sobre linguagem', 'filosofia-linguagem'),
+('c0000017-0000-0000-0000-000000000017', 'Sublime', E'Experiência estética do grandioso e transcendente', 'estetica'),
+('c0000018-0000-0000-0000-000000000018', E'Representação', E'Relação entre signo e significado', 'filosofia-linguagem'),
+('c0000019-0000-0000-0000-000000000019', 'Intencionalidade', E'Direcionamento da consciência a objetos', 'fenomenologia'),
+('c0000020-0000-0000-0000-000000000020', 'Virtude', E'Excelência de caráter', 'etica'),
+('c0000021-0000-0000-0000-000000000021', E'Indução', E'Raciocínio do particular ao universal', 'epistemologia'),
+('c0000022-0000-0000-0000-000000000022', E'Experiência', E'Vivência consciente e perceptiva', 'fenomenologia');
+
+-- Relacionar conceitos com textos
+INSERT INTO text_concepts (text_id, concept_id) VALUES
+-- Texto sobre Tempo
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'c0000001-0000-0000-0000-000000000001'), -- Tempo
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'c0000002-0000-0000-0000-000000000002'), -- Consciência
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'c0000003-0000-0000-0000-000000000003'), -- Fenomenologia
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'c0000004-0000-0000-0000-000000000004'), -- Relatividade
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'c0000022-0000-0000-0000-000000000022'), -- Experiência
+
+-- Texto sobre Conhecimento e Crença
+('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'c0000005-0000-0000-0000-000000000005'), -- Conhecimento
+('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'c0000006-0000-0000-0000-000000000006'), -- Crença
+('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'c0000007-0000-0000-0000-000000000007'), -- Justificação
+('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'c0000008-0000-0000-0000-000000000008'), -- Verdade
+
+-- Texto sobre Responsabilidade Moral
+('cccccccc-cccc-cccc-cccc-cccccccccccc', 'c0000009-0000-0000-0000-000000000009'), -- Responsabilidade
+('cccccccc-cccc-cccc-cccc-cccccccccccc', 'c0000010-0000-0000-0000-000000000010'), -- Ética do Cuidado
+('cccccccc-cccc-cccc-cccc-cccccccccccc', 'c0000011-0000-0000-0000-000000000011'), -- Pluralismo Moral
+('cccccccc-cccc-cccc-cccc-cccccccccccc', 'c0000012-0000-0000-0000-000000000012'), -- Relativismo
+
+-- Texto sobre Paradoxos da Autorreferência
+('dddddddd-dddd-dddd-dddd-dddddddddddd', 'c0000013-0000-0000-0000-000000000013'), -- Paradoxo
+('dddddddd-dddd-dddd-dddd-dddddddddddd', 'c0000014-0000-0000-0000-000000000014'), -- Autorreferência
+('dddddddd-dddd-dddd-dddd-dddddddddddd', 'c0000015-0000-0000-0000-000000000015'), -- Incompletude
+('dddddddd-dddd-dddd-dddd-dddddddddddd', 'c0000016-0000-0000-0000-000000000016'), -- Metalinguagem
+
+-- Texto sobre O Sublime e a Experiência Estética
+('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'c0000017-0000-0000-0000-000000000017'), -- Sublime
+('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'c0000018-0000-0000-0000-000000000018'), -- Representação
+('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'c0000022-0000-0000-0000-000000000022'), -- Experiência
+
+-- Texto sobre Consciência e Intencionalidade
+('ffffffff-ffff-ffff-ffff-ffffffffffff', 'c0000002-0000-0000-0000-000000000002'), -- Consciência
+('ffffffff-ffff-ffff-ffff-ffffffffffff', 'c0000019-0000-0000-0000-000000000019'), -- Intencionalidade
+('ffffffff-ffff-ffff-ffff-ffffffffffff', 'c0000003-0000-0000-0000-000000000003'), -- Fenomenologia
+
+-- Texto sobre Virtudes e Caráter
+('11111111-1111-1111-1111-111111111117', 'c0000020-0000-0000-0000-000000000020'), -- Virtude
+('11111111-1111-1111-1111-111111111117', 'c0000009-0000-0000-0000-000000000009'), -- Responsabilidade
+
+-- Texto sobre O Problema da Indução
+('11111111-1111-1111-1111-111111111118', 'c0000021-0000-0000-0000-000000000021'), -- Indução
+('11111111-1111-1111-1111-111111111118', 'c0000005-0000-0000-0000-000000000005'), -- Conhecimento
+('11111111-1111-1111-1111-111111111118', 'c0000007-0000-0000-0000-000000000007'), -- Justificação
+
+-- Texto sobre Linguagem e Realidade
+('11111111-1111-1111-1111-111111111119', 'c0000018-0000-0000-0000-000000000018'), -- Representação
+('11111111-1111-1111-1111-111111111119', 'c0000016-0000-0000-0000-000000000016'), -- Metalinguagem
+('11111111-1111-1111-1111-111111111119', 'c0000008-0000-0000-0000-000000000008'), -- Verdade
+
+-- Texto sobre Liberdade e Determinismo
+('11111111-1111-1111-1111-11111111111a', 'c0000009-0000-0000-0000-000000000009'), -- Responsabilidade
+('11111111-1111-1111-1111-11111111111a', 'c0000002-0000-0000-0000-000000000002'); -- Consciência
 
 -- Inserir questões/dúvidas
 INSERT INTO questions (id, text_id, user_id, title, content, type, created_at) VALUES

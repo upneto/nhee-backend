@@ -8,11 +8,14 @@ const textsService = {
     let query = `
       SELECT t.*, u.username, u.name as author_name,
              COALESCE(AVG(ar.rating), 0) as authenticity_score,
-             COUNT(DISTINCT q.id) as questions_count
+             COUNT(DISTINCT q.id) as questions_count,
+             STRING_AGG(DISTINCT c.name, ', ') as tags
       FROM texts t
       LEFT JOIN users u ON t.user_id = u.id
       LEFT JOIN authenticity_ratings ar ON t.id = ar.text_id
       LEFT JOIN questions q ON t.id = q.text_id
+      LEFT JOIN text_concepts tc ON t.id = tc.text_id
+      LEFT JOIN concepts c ON tc.concept_id = c.id
       WHERE 1=1
     `;
     
@@ -95,13 +98,25 @@ const textsService = {
 
   async get(id) {
     const result = await db.query(
-      `SELECT t.*, u.username, u.name as author_name,
-              AVG(ar.rating) as authenticity
+      `SELECT t.*, 
+              u.username as author_username, 
+              u.name as author_name,
+              u.institution as institution_name,
+              COALESCE(AVG(ar.rating), 0) as authenticity_score,
+              COUNT(DISTINCT ar.id) as ratings_count,
+              STRING_AGG(DISTINCT c.name, ', ') as tags,
+              (t.author IS NOT NULL AND t.author != '') as is_author,
+              t.area as knowledge_area_code,
+              t.type as text_type_code,
+              t.objective as text_objective_code,
+              t.foundation_level as foundation_level_code
        FROM texts t
        LEFT JOIN users u ON t.user_id = u.id
        LEFT JOIN authenticity_ratings ar ON t.id = ar.text_id
+       LEFT JOIN text_concepts tc ON t.id = tc.text_id
+       LEFT JOIN concepts c ON tc.concept_id = c.id
        WHERE t.id = $1
-       GROUP BY t.id, u.username, u.name`,
+       GROUP BY t.id, u.username, u.name, u.institution`,
       [id]
     );
     
@@ -109,13 +124,22 @@ const textsService = {
   },
 
   async create(textData) {
-    const { user_id, title, content, area, type, author, institution, references, objective, foundation_level } = textData;
+    const { 
+      user_id, title, content, area, type, author, institution, references, 
+      objective, foundation_level, in_response_to_question_id, in_response_to_text_id 
+    } = textData;
     
     const result = await db.query(
-      `INSERT INTO texts (user_id, title, content, area, type, author, institution, references, objective, foundation_level)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO texts (
+        user_id, title, content, area, type, author, institution, references, 
+        objective, foundation_level, in_response_to_question_id, in_response_to_text_id
+      )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
-      [user_id, title, content, area, type, author, institution, references, objective, foundation_level]
+      [
+        user_id, title, content, area, type, author, institution, references, 
+        objective, foundation_level, in_response_to_question_id || null, in_response_to_text_id || null
+      ]
     );
     
     return result.rows[0];

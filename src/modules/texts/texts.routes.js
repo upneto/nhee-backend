@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, query } = require('express-validator');
 const textsController = require('./texts.controller');
+const questionsController = require('../questions/questions.controller');
 const validate = require('../../shared/middleware/validate');
 const authMiddleware = require('../../shared/middleware/auth');
 
@@ -28,5 +29,14 @@ router.post('/:id/evaluate', authMiddleware, [
   body('rating').isInt({ min: 1, max: 10 }).withMessage('Nota deve ser entre 1 e 10'),
   validate
 ], textsController.evaluate);
+
+// Rotas de questões (sub-recurso de texts)
+router.get('/:textId/questions', questionsController.list);
+router.post('/:textId/questions', authMiddleware, [
+  body('type').trim().notEmpty().withMessage('Tipo de contribuição é obrigatório'),
+  body('content').trim().isLength({ min: 10 }).withMessage('Conteúdo deve ter no mínimo 10 caracteres'),
+  validate
+], questionsController.create);
+router.delete('/:textId/questions/:id', authMiddleware, questionsController.delete);
 
 module.exports = router;

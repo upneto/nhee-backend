@@ -32,7 +32,7 @@ app.get('/health', (req, res) => {
 const apiPrefix = process.env.API_PREFIX || '/api';
 app.use(`${apiPrefix}/auth`, authRoutes);
 app.use(`${apiPrefix}/texts`, textRoutes);
-app.use(`${apiPrefix}/questions`, questionRoutes);
+// app.use(`${apiPrefix}/questions`, questionRoutes); // Questões agora são sub-recurso de /texts
 app.use(`${apiPrefix}/users`, userRoutes);
 app.use(`${apiPrefix}/concepts`, conceptRoutes);
 app.use(`${apiPrefix}/contact`, contactRoutes);
