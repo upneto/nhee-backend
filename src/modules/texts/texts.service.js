@@ -81,8 +81,46 @@ const textsService = {
     
     const result = await db.query(query, params);
     
-    // Count total
-    const countResult = await db.query('SELECT COUNT(*) FROM texts');
+    // Count total com os mesmos filtros aplicados
+    let countQuery = `
+      SELECT COUNT(DISTINCT t.id) as count
+      FROM texts t
+      LEFT JOIN text_concepts tc ON t.id = tc.text_id
+      LEFT JOIN concepts c ON tc.concept_id = c.id
+      WHERE 1=1
+    `;
+    
+    const countParams = [];
+    let countParamNum = 1;
+    
+    if (search) {
+      countQuery += ` AND (t.title ILIKE $${countParamNum} OR t.content ILIKE $${countParamNum})`;
+      countParams.push(`%${search}%`);
+      countParamNum++;
+    }
+    
+    if (area) {
+      countQuery += ` AND t.area = $${countParamNum}`;
+      countParams.push(area);
+      countParamNum++;
+    }
+    
+    if (type) {
+      countQuery += ` AND t.type = $${countParamNum}`;
+      countParams.push(type);
+      countParamNum++;
+    }
+    
+    if (concept) {
+      countQuery += ` AND EXISTS (
+        SELECT 1 FROM text_concepts tc2 
+        JOIN concepts c2 ON tc2.concept_id = c2.id 
+        WHERE tc2.text_id = t.id AND c2.name ILIKE $${countParamNum}
+      )`;
+      countParams.push(`%${concept}%`);
+    }
+    
+    const countResult = await db.query(countQuery, countParams);
     const total = parseInt(countResult.rows[0].count);
     
     return {

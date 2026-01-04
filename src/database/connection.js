@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const logger = require('../shared/utils/logger');
 require('dotenv').config();
 
 const pool = new Pool({
@@ -8,14 +9,17 @@ const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   client_encoding: 'UTF8',
+  max: 20, // Máximo de conexões no pool
+  idleTimeoutMillis: 30000, // Tempo de espera antes de fechar conexão ociosa
+  connectionTimeoutMillis: 2000, // Tempo de espera para obter conexão do pool
 });
 
 pool.on('connect', () => {
-  console.log('✅ Conectado ao PostgreSQL');
+  logger.debug('Conectado ao PostgreSQL');
 });
 
 pool.on('error', (err) => {
-  console.error('❌ Erro inesperado no PostgreSQL:', err);
+  logger.error('Erro inesperado no PostgreSQL:', err);
   process.exit(-1);
 });
 

@@ -1,5 +1,13 @@
+const logger = require('../utils/logger');
+
 const errorHandler = (err, req, res, next) => {
-  console.error('❌ Error:', err);
+  // Log apenas em desenvolvimento
+  if (process.env.NODE_ENV === 'development') {
+    logger.error('Error:', { message: err.message, stack: err.stack });
+  } else {
+    // Em produção, log apenas mensagem sem stack trace
+    logger.error('Error:', err.message);
+  }
 
   // Erro de validação
   if (err.name === 'ValidationError') {
@@ -26,7 +34,7 @@ const errorHandler = (err, req, res, next) => {
   if (err.code === '23505') { // Unique violation
     return res.status(409).json({
       error: 'Registro duplicado',
-      details: err.detail
+      ...(process.env.NODE_ENV === 'development' && { details: err.detail })
     });
   }
 
@@ -36,10 +44,13 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Erro padrão
-  res.status(err.statusCode || 500).json({
-    error: err.message || 'Erro interno do servidor'
-  });
+  // Erro padrão - não expor detalhes em produção
+  const statusCode = err.statusCode || 500;
+  const message = statusCode === 500 && process.env.NODE_ENV === 'production'
+    ? 'Erro interno do servidor'
+    : (err.message || 'Erro interno do servidor');
+
+  res.status(statusCode).json({ error: message });
 };
 
 module.exports = errorHandler;
