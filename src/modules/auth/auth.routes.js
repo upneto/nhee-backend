@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const authController = require('./auth.controller');
 const validate = require('../../shared/middleware/validate');
 const authMiddleware = require('../../shared/middleware/auth');
+const { authLimiter, registerLimiter, forgotPasswordLimiter } = require('../../shared/middleware/rateLimiter');
 
 const router = express.Router();
 
@@ -27,10 +28,10 @@ const forgotPasswordValidation = [
 ];
 
 // Rotas
-router.post('/register', registerValidation, authController.register);
-router.post('/login', loginValidation, authController.login);
+router.post('/register', registerLimiter, registerValidation, authController.register);
+router.post('/login', authLimiter, loginValidation, authController.login);
 router.post('/logout', authMiddleware, authController.logout);
-router.post('/forgot-password', forgotPasswordValidation, authController.forgotPassword);
+router.post('/forgot-password', forgotPasswordLimiter, forgotPasswordValidation, authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 router.get('/validate-token', authMiddleware, authController.validateToken);
 
