@@ -18,6 +18,10 @@ const createTextValidation = [
 
 // Rotas públicas
 router.get('/', textsController.list);
+
+// Rota para buscar respostas de uma dúvida específica (deve vir antes de /:id)
+router.get('/questions/:questionId/responses', textsController.getResponsesByQuestionId);
+
 router.get('/:id', textsController.get);
 
 // Rotas autenticadas
@@ -29,6 +33,14 @@ router.post('/:id/evaluate', authMiddleware, [
   body('rating').isInt({ min: 1, max: 10 }).withMessage('Nota deve ser entre 1 e 10'),
   validate
 ], textsController.evaluate);
+
+// Rotas de avaliação de autenticidade
+router.post('/:id/rate', authMiddleware, [
+  body('rating').isInt({ min: 1, max: 10 }).withMessage('Nota deve ser entre 1 e 10'),
+  validate
+], textsController.rateText);
+router.get('/:id/my-rating', authMiddleware, textsController.getUserRating);
+router.delete('/:id/my-rating', authMiddleware, textsController.deleteRating);
 
 // Rotas de questões (sub-recurso de texts)
 router.get('/:textId/questions', questionsController.list);

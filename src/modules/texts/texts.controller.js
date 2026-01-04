@@ -1,5 +1,7 @@
 const textsService = require('./texts.service');
+const authenticityService = require('./authenticity.service');
 const domainValidator = require('../../shared/middleware/domainValidator');
+const { sanitizeObject, validateLength, validateCharacters } = require('../../shared/sanitize');
 
 const textsController = {
   async list(req, res, next) {
@@ -42,7 +44,21 @@ const textsController = {
   async create(req, res, next) {
     try {
       const userId = req.user.id;
-      const { area, type, objective, foundation_level } = req.body;
+      const { area, type, objective, foundation_level, title, content } = req.body;
+      
+      // Validar comprimento do título e conteúdo
+      if (!validateLength(title, 10, 150)) {
+        return res.status(400).json({ error: 'O título deve ter entre 10 e 150 caracteres' });
+      }
+      
+      if (!validateLength(content, 200, 50000)) {
+        return res.status(400).json({ error: 'O conteúdo deve ter entre 200 e 50000 caracteres' });
+      }
+      
+      // Validar caracteres perigosos
+      if (!validateCharacters(title) || !validateCharacters(content)) {
+        return res.status(400).json({ error: 'O texto contém caracteres não permitidos' });
+      }
       
       // Validar campos de domínio
       const validation = await domainValidator.validateMultiple([
@@ -56,7 +72,10 @@ const textsController = {
         return res.status(400).json({ errors: validation.errors });
       }
       
-      const textData = { ...req.body, user_id: userId };
+      // Sanitizar dados de entrada para prevenir XSS
+      const sanitizedBody = sanitizeObject(req.body);
+      
+      const textData = { ...sanitizedBody, user_id: userId };
       const text = await textsService.create(textData);
       
       res.status(201).json(text);
@@ -69,7 +88,25 @@ const textsController = {
     try {
       const { id } = req.params;
       const userId = req.user.id;
-      const { area, type, objective, foundation_level } = req.body;
+      const { area, type, objective, foundation_level, title, content } = req.body;
+      
+      // Validar comprimento do título e conteúdo se fornecidos
+      if (title && !validateLength(title, 10, 150)) {
+        return res.status(400).json({ error: 'O título deve ter entre 10 e 150 caracteres' });
+      }
+      
+      if (content && !validateLength(content, 200, 50000)) {
+        return res.status(400).json({ error: 'O conteúdo deve ter entre 200 e 50000 caracteres' });
+      }
+      
+      // Validar caracteres perigosos
+      if (title && !validateCharacters(title)) {
+        return res.status(400).json({ error: 'O título contém caracteres não permitidos' });
+      }
+      
+      if (content && !validateCharacters(content)) {
+        return res.status(400).json({ error: 'O conteúdo contém caracteres não permitidos' });
+      }
       
       // Validar campos de domínio
       const validation = await domainValidator.validateMultiple([
@@ -83,7 +120,10 @@ const textsController = {
         return res.status(400).json({ errors: validation.errors });
       }
       
-      const text = await textsService.update(id, userId, req.body);
+      // Sanitizar dados de entrada para prevenir XSS
+      const sanitizedBody = sanitizeObject(req.body);
+      
+      const text = await textsService.update(id, userId, sanitizedBody);
       
       res.json(text);
     } catch (error) {
@@ -125,6 +165,83 @@ const textsController = {
       const result = await textsService.evaluate(id, userId, rating);
       
       res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getResponsesByQuestionId(req, res, next) {
+    try {
+      const { questionId } = req.params;
+      const filters = {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 20
+      };
+      
+      const result = await textsService.getResponsesByQuestionId(questionId, filters);
+      
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async rateText(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { rating } = req.body;
+      const userId = req.user.id;
+      
+      // Validar rating
+      if (!rating || rating < 1 || rating > 10) {
+        return res.status(400).json({ error: 'A nota deve estar entre 1 e 10' });
+      }
+      
+      const result = await authenticityService.rateText(id, userId, parseInt(rating));
+      
+      res.json({
+        message: 'Avaliação registrada com sucesso',
+        rating: result
+      });
+    } catch (error) {
+      if (error.message === 'Você não pode avaliar seu próprio texto') {
+        return res.status(403).json({ error: error.message });
+      }
+      if (error.message === 'Texto não encontrado') {
+        return res.status(404).json({ error: error.message });
+      }
+      next(error);
+    }
+  },
+
+  async getUserRating(req, res, next) {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      
+      const rating = await authenticityService.getUserRating(id, userId);
+      
+      res.json({
+        rating: rating ? rating.rating : null,
+        hasRated: !!rating
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async deleteRating(req, res, next) {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      
+      const deleted = await authenticityService.deleteRating(id, userId);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: 'Avaliação não encontrada' });
+      }
+      
+      res.json({ message: 'Avaliação removida com sucesso' });
     } catch (error) {
       next(error);
     }
