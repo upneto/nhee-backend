@@ -14,7 +14,16 @@ const authController = {
         bio
       });
       
-      res.status(201).json(result);
+      // Enviar token como HttpOnly cookie
+      res.cookie('authToken', result.token, {
+        httpOnly: true, // Não acessível via JavaScript
+        secure: process.env.NODE_ENV === 'production', // HTTPS apenas em produção
+        sameSite: 'strict', // Proteção CSRF
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
+      });
+      
+      // Retornar apenas dados do usuário (sem token)
+      res.status(201).json({ user: result.user });
     } catch (error) {
       next(error);
     }
@@ -26,7 +35,16 @@ const authController = {
       
       const result = await authService.login(username, password);
       
-      res.json(result);
+      // Enviar token como HttpOnly cookie
+      res.cookie('authToken', result.token, {
+        httpOnly: true, // Não acessível via JavaScript
+        secure: process.env.NODE_ENV === 'production', // HTTPS apenas em produção
+        sameSite: 'strict', // Proteção CSRF
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
+      });
+      
+      // Retornar apenas dados do usuário (sem token)
+      res.json({ user: result.user });
     } catch (error) {
       next(error);
     }
@@ -34,7 +52,13 @@ const authController = {
 
   async logout(req, res, next) {
     try {
-      // Logout é gerenciado no frontend (remover token)
+      // Limpar cookie de autenticação
+      res.clearCookie('authToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+      
       res.json({ message: 'Logout realizado com sucesso' });
     } catch (error) {
       next(error);
